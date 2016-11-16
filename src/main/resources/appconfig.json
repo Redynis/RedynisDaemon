@@ -1,5 +1,7 @@
 {
     "appName": "RedynisDaemon",
     "metadataHost": "scs555pc",
-    "metadataPort": 6379
+    "metadataPort": 6379,
+    "analysisThreadPoolSize": 1,
+    "placementThreadPoolSize": 10
 }

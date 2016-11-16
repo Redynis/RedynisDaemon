@@ -38,7 +38,7 @@ public class Options
         }
     }
 
-    static Options getInstance()
+    public static Options getInstance()
         throws InternalAppError
     {
         if (null == instance)
@@ -73,6 +73,7 @@ public class Options
 
         log.debug("configFilePath: " + getConfigFilePath());
         appConfig = Constants.MAPPER.readValue(new File(getConfigFilePath()), AppConfig.class);
+        log.debug("appConfig: " + appConfig);
 
         log.info("Options successfully read");
     }

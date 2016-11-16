@@ -14,4 +14,6 @@ public class AppConfig
     private String appName;
     private String metadataHost;
     private Integer metadataPort;
+    private Integer analysisThreadPoolSize;
+    private Integer placementThreadPoolSize;
 }
