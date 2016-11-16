@@ -1,5 +1,6 @@
 package ca.uwaterloo.redynisdaemon.utils;
 
+import ca.uwaterloo.redynisdaemon.beans.AppConfig;
 import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
 import ca.uwaterloo.redynisdaemon.exceptions.InvalidConfigurationError;
 import lombok.Getter;
@@ -10,11 +11,16 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
+import java.io.File;
+import java.io.IOException;
+
 @ToString
 @Getter
 public class Options
 {
     private static Options instance;
+    private AppConfig appConfig;
+
     private static Logger log = LogManager.getLogger(Options.class);
 
     @Option(name = "-help", usage = "help", metaVar = "HELP")
@@ -24,7 +30,7 @@ public class Options
     private String configFilePath;
 
     public static void initializeInstance(String[] args)
-        throws InvalidConfigurationError
+        throws InvalidConfigurationError, IOException
     {
         if (null == instance)
         {
@@ -32,7 +38,7 @@ public class Options
         }
     }
 
-    public static Options getInstance()
+    static Options getInstance()
         throws InternalAppError
     {
         if (null == instance)
@@ -43,7 +49,7 @@ public class Options
     }
 
     private Options(String[] args)
-        throws InvalidConfigurationError
+        throws InvalidConfigurationError, IOException
     {
         CmdLineParser parser = new CmdLineParser(this);
 
@@ -66,6 +72,8 @@ public class Options
         }
 
         log.debug("configFilePath: " + getConfigFilePath());
+        appConfig = Constants.MAPPER.readValue(new File(getConfigFilePath()), AppConfig.class);
+
         log.info("Options successfully read");
     }
 }

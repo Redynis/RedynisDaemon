@@ -1,12 +1,29 @@
 package ca.uwaterloo.redynisdaemon.utils;
 
+import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
 import redis.clients.jedis.Jedis;
 
 public class RedisHelper
 {
+    private static RedisHelper instance;
     private Jedis jedis;
 
-    public RedisHelper(String host, Integer port)
+    public static RedisHelper getInstance()
+        throws InternalAppError
+    {
+        if (null == instance)
+        {
+            instance =
+                new RedisHelper(
+                    Options.getInstance().getAppConfig().getMetadataHost(),
+                    Options.getInstance().getAppConfig().getMetadataPort()
+                );
+        }
+
+        return instance;
+    }
+
+    private RedisHelper(String host, Integer port)
     {
         this.jedis = new Jedis(host, port);
     }

@@ -1,3 +1,5 @@
 {
-    "appName": "RedynisDaemon"
+    "appName": "RedynisDaemon",
+    "metadataHost": "scs555pc",
+    "metadataPort": 6379
 }
