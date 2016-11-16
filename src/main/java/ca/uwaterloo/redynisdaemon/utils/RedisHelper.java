@@ -3,6 +3,9 @@ package ca.uwaterloo.redynisdaemon.utils;
 import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
 import redis.clients.jedis.Jedis;
 
+import java.util.List;
+import java.util.Set;
+
 public class RedisHelper
 {
     private static RedisHelper instance;
@@ -36,5 +39,16 @@ public class RedisHelper
     public void setValue(String key, String value)
     {
         jedis.set(key, value);
+    }
+
+    public Set<String> getAllKeys()
+    {
+        return jedis.keys("*");
+    }
+
+    public List<String> multiget(List<String> keys)
+    {
+        String[] keyArray = keys.toArray(new String[keys.size()]);
+        return jedis.mget(keyArray);
     }
 }
