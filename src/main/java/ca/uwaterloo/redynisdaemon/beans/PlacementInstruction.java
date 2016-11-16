@@ -11,13 +11,10 @@ import java.util.Set;
 @Setter(value = AccessLevel.PRIVATE)
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AppConfig
+public class PlacementInstruction
 {
-    private String appName;
-    private Set<String> dataHosts;
-    private Integer dataPort;
-    private String metadataHost;
-    private Integer metadataPort;
-    private Integer analysisThreadPoolSize;
-    private Integer placementThreadPoolSize;
+    private String redisKey;
+    private String sourceHost;
+    private Set<String> replicateOnHosts;
+    private Set<String> deleteFromHosts;
 }
