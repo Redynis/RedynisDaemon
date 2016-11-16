@@ -46,7 +46,7 @@ public class RedisHelper
         return jedis.keys("*");
     }
 
-    public List<String> multiget(List<String> keys)
+    public List<String> multiGet(List<String> keys)
     {
         String[] keyArray = keys.toArray(new String[keys.size()]);
         return jedis.mget(keyArray);

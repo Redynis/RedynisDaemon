@@ -1,12 +1,16 @@
 package ca.uwaterloo.redynisdaemon.threads;
 
 import ca.uwaterloo.redynisdaemon.beans.PlacementInstruction;
+import ca.uwaterloo.redynisdaemon.beans.UsageMetric;
 import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
+import ca.uwaterloo.redynisdaemon.utils.Constants;
 import ca.uwaterloo.redynisdaemon.utils.Options;
+import ca.uwaterloo.redynisdaemon.utils.RedisHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
+import java.io.IOException;
 import java.util.Set;
 
 class PlacementThread implements Runnable
@@ -22,9 +26,9 @@ class PlacementThread implements Runnable
     @Override
     public void run()
     {
+        log.info("Placement Thread begun");
         try
         {
-            log.info("Placement Thread executed");
             log.debug("placementInstructions: " + placementInstructions);
 
             for (PlacementInstruction instruction: placementInstructions)
@@ -34,6 +38,15 @@ class PlacementThread implements Runnable
                     instruction.getSourceHost(),
                     instruction.getReplicateOnHosts()
                 );
+
+                executeDelete(
+                    instruction.getRedisKey(),
+                    instruction.getDeleteFromHosts()
+                );
+
+                updateOwnerHosts(
+                    instruction.getRedisKey(), instruction.getReplicateOnHosts(), instruction.getDeleteFromHosts()
+                );
                 log.debug("executed copy");
             }
         }
@@ -42,10 +55,23 @@ class PlacementThread implements Runnable
             log.error("Encountered exception while executing Analyzer Thread. Terminating thread. ", e);
         }
 
+        log.info("Placement Thread concluded");
+    }
+
+    private void executeDelete(String redisKey, Set<String> deleteFromHosts)
+        throws InternalAppError
+    {
+        Jedis jedis = null;
+        Integer dataPort = Options.getInstance().getAppConfig().getDataPort();
+        for (String host: deleteFromHosts)
+        {
+            jedis = new Jedis(host, dataPort);
+            jedis.del(redisKey);
+        }
     }
 
     private void executeCopy(String redisKey, String sourceHost, Set<String> replicateOnHosts)
-        throws InternalAppError
+        throws InternalAppError, IOException
     {
         Jedis jedis = null;
         Integer dataPort = Options.getInstance().getAppConfig().getDataPort();
@@ -61,4 +87,25 @@ class PlacementThread implements Runnable
             jedis.set(redisKey, redisValue);
         }
     }
+
+    private void updateOwnerHosts(String redisKey, Set<String> newHosts, Set<String> obsoleteHosts)
+        throws InternalAppError, IOException
+    {
+        UsageMetric usageMetric =
+            Constants.MAPPER.readValue(RedisHelper.getInstance().getValue(redisKey), UsageMetric.class);
+
+        Set<String> hosts = usageMetric.getHosts();
+        hosts.addAll(newHosts);
+        hosts.removeAll(obsoleteHosts);
+
+        UsageMetric newUsageMetric =
+            new UsageMetric(
+                usageMetric.getTotalAccessCount(),
+                hosts,
+                usageMetric.getHostAccesses()
+            );
+
+        RedisHelper.getInstance().setValue(redisKey, Constants.MAPPER.writeValueAsString(newUsageMetric));
+    }
+
 }

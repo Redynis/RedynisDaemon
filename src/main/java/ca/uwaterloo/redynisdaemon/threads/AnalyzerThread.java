@@ -51,6 +51,8 @@ public class AnalyzerThread implements Runnable
         {
             log.error("Encountered exception while executing Analyzer Thread. Terminating thread. ", e);
         }
+
+        log.info("Analyzer Thread concluded");
     }
 
     private PlacementInstruction analyzeKeyMetrics(Map.Entry<String, UsageMetric>keyMetric)
@@ -114,7 +116,7 @@ public class AnalyzerThread implements Runnable
         List<String> keys = new ArrayList<>(redisHelper.getAllKeys());
         Map<String, UsageMetric> usageMetricMap = new HashMap<>();
 
-        List<String> usageMetrics = redisHelper.multiget(keys);
+        List<String> usageMetrics = redisHelper.multiGet(keys);
 
         for (int i = 0; i < keys.size(); i++)
         {
