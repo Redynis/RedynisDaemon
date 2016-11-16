@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.logging.log4j:log4j-api:2.7'
+    compile 'org.apache.logging.log4j:log4j-core:2.7'
+    compile 'args4j:args4j:2.33'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.projectlombok:lombok:1.16.10'
+    compile 'commons-io:commons-io:2.5'
+    compile 'org.apache.commons:commons-lang3:3.5'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.3'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.3'
+    compile 'redis.clients:jedis:2.9.0'
+    testCompile 'junit:junit:4.12'
+}
+
+mainClassName = "ca.uwaterloo.redynisdaemon.RedynisDaemon"
+
+task createStartScripts(type: CreateStartScripts) {
+    mainClassName = "ca.uwaterloo.redynisdaemon.RedynisDaemon"
+    applicationName = 'RedynisDaemon'
+}
+
+task copyDepLib(type: Copy) {
+    into "build/lib"
+    from configurations.runtime
+}
+
+task copyAppLib(type: Copy) {
+    from 'build/libs'
+    into 'build/lib'
+}
+
+build.dependsOn([copyDepLib, copyAppLib])
