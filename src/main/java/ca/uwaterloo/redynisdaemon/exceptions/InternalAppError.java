@@ -1,16 +1,29 @@
 package ca.uwaterloo.redynisdaemon.exceptions;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
-
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Getter(value = AccessLevel.PUBLIC)
-@Setter(value = AccessLevel.PRIVATE)
-@ToString()
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class InternalAppError
+public class InternalAppError extends Exception
 {
-    private String errorMessage;
-    private String sourceClass;
+    public InternalAppError()
+    {
+        super();
+    }
+
+    public InternalAppError(String s)
+    {
+        super(s);
+    }
+
+    public InternalAppError(String s, Throwable throwable)
+    {
+        super(s, throwable);
+    }
+
+    public InternalAppError(Throwable throwable)
+    {
+        super(throwable);
+    }
+
+    protected InternalAppError(String s, Throwable throwable, boolean b, boolean b1)
+    {
+        super(s, throwable, b, b1);
+    }
 }
