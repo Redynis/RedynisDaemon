@@ -4,6 +4,7 @@ import ca.uwaterloo.redynisdaemon.beans.PlacementInstruction;
 import ca.uwaterloo.redynisdaemon.beans.UsageMetric;
 import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
 import ca.uwaterloo.redynisdaemon.utils.Constants;
+import ca.uwaterloo.redynisdaemon.utils.Options;
 import ca.uwaterloo.redynisdaemon.utils.RedisHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +57,7 @@ public class AnalyzerThread implements Runnable
     }
 
     private PlacementInstruction analyzeKeyMetrics(Map.Entry<String, UsageMetric>keyMetric)
+        throws InternalAppError
     {
         PlacementInstruction instruction = null;
 
@@ -103,10 +105,11 @@ public class AnalyzerThread implements Runnable
     }
 
     private Boolean exceedsAccessThreshold(Integer accesses, Integer totalAccessCount)
+        throws InternalAppError
     {
         Double factor = (double) accesses / (double) totalAccessCount;
         log.debug("factor: " + factor);
-        return factor >= Constants.ACCESS_THRESHOLD_FACTOR;
+        return factor >= Options.getInstance().getAppConfig().getAccessThreshold();
     }
 
     private Map<String, UsageMetric> getAllUsageMetrics()

@@ -1,5 +1,6 @@
 {
     "appName": "RedynisDaemon",
+    "accessThreshold": 0.4,
     "dataHosts": ["scs555pc", "scs556pc"],
     "dataPort": 6379,
     "metadataHost": "scs555pc",

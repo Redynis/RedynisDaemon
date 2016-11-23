@@ -14,6 +14,7 @@ import java.util.Set;
 public class AppConfig
 {
     private String appName;
+    private Double accessThreshold;
     private Set<String> dataHosts;
     private Integer dataPort;
     private String metadataHost;
