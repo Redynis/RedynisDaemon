@@ -6,5 +6,7 @@
     "metadataHost": "scs555pc",
     "metadataPort": 6380,
     "analysisThreadPoolSize": 1,
-    "placementThreadPoolSize": 10
+    "placementThreadPoolSize": 10,
+    "minutesBetweenAnalysis": 1,
+    "keyExpirySeconds": 86400
 }

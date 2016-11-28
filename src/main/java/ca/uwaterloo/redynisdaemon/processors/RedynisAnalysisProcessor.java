@@ -24,7 +24,8 @@ public class RedynisAnalysisProcessor extends Processor
 
         log.info("RedynisAnalysis Processing initiated");
         analysisScheduler.scheduleWithFixedDelay(
-            new AnalyzerThread(placementScheduler), 0, 1, TimeUnit.SECONDS
+            new AnalyzerThread(placementScheduler), 0,
+            Options.getInstance().getAppConfig().getMinutesBetweenAnalysis(), TimeUnit.SECONDS
         );
     }
 }
