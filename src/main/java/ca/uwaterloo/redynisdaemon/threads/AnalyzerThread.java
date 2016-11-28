@@ -96,7 +96,7 @@ public class AnalyzerThread implements Runnable
         log.debug("deleteHosts: " + deleteHosts);
 
         String sourceHost = oldHosts.iterator().next();
-        if (newHosts.size() != 0 && deleteHosts.size() != 0)
+        if (newHosts.size() != 0 || deleteHosts.size() != 0)
         {
             instruction = new PlacementInstruction(redisKey, sourceHost, newHosts, deleteHosts);
         }

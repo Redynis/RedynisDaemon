@@ -102,7 +102,8 @@ class PlacementThread implements Runnable
             new UsageMetric(
                 usageMetric.getTotalAccessCount(),
                 hosts,
-                usageMetric.getHostAccesses()
+                usageMetric.getHostAccesses(),
+                usageMetric.getLastAccessedDate()
             );
 
         RedisHelper.getInstance().setValue(redisKey, Constants.MAPPER.writeValueAsString(newUsageMetric));
