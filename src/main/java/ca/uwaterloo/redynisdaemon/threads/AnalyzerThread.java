@@ -1,8 +1,8 @@
 package ca.uwaterloo.redynisdaemon.threads;
 
-import ca.uwaterloo.redynisdaemon.beans.PlacementInstruction;
 import ca.uwaterloo.redynisdaemon.beans.UsageMetric;
 import ca.uwaterloo.redynisdaemon.exceptions.InternalAppError;
+import ca.uwaterloo.redynisdaemon.instructions.PlacementInstruction;
 import ca.uwaterloo.redynisdaemon.utils.Constants;
 import ca.uwaterloo.redynisdaemon.utils.Options;
 import ca.uwaterloo.redynisdaemon.utils.RedisHelper;
@@ -18,10 +18,12 @@ public class AnalyzerThread implements Runnable
 {
     private static Logger log = LogManager.getLogger(AnalyzerThread.class);
     private ScheduledExecutorService placementScheduler;
+    private ScheduledExecutorService deletionScheduler;
 
-    public AnalyzerThread(ScheduledExecutorService placementScheduler)
+    public AnalyzerThread(ScheduledExecutorService placementScheduler, ScheduledExecutorService deletionScheduler)
     {
         this.placementScheduler = placementScheduler;
+        this.deletionScheduler = deletionScheduler;
     }
 
     @Override
@@ -34,11 +36,12 @@ public class AnalyzerThread implements Runnable
 
             Map<String, UsageMetric> allUsageMetrics = getAllUsageMetrics();
 
-            PlacementInstruction instruction = null;
+            PlacementInstruction instruction;
             for (Map.Entry<String, UsageMetric> entry : allUsageMetrics.entrySet())
             {
                 instruction = analyzeKeyMetrics(entry);
-                if(null != instruction)
+
+                if (null != instruction)
                 {
                     placementInstructions.add(instruction);
                 }
@@ -46,7 +49,7 @@ public class AnalyzerThread implements Runnable
 
             if (placementInstructions.size() > 0)
             {
-                placementScheduler.execute(new PlacementThread(placementInstructions));
+                placementScheduler.execute(new PlacementThread(placementInstructions, deletionScheduler));
             }
         }
         catch (Exception e)
@@ -57,7 +60,7 @@ public class AnalyzerThread implements Runnable
         log.info("Analyzer Thread concluded");
     }
 
-    private PlacementInstruction analyzeKeyMetrics(Map.Entry<String, UsageMetric>keyMetric)
+    private PlacementInstruction analyzeKeyMetrics(Map.Entry<String, UsageMetric> keyMetric)
         throws InternalAppError
     {
         PlacementInstruction instruction = null;
@@ -73,43 +76,46 @@ public class AnalyzerThread implements Runnable
         if (lastAccessedDate.isBefore(expiryDeadline))
         {
             log.debug("Redis key " + redisKey + " expired. Deleting from all owner hosts");
+            instruction = new PlacementInstruction(redisKey, null, new HashSet<>(), usageMetric.getHosts());
         }
-
-        Map<String, Integer> hostAccesses = usageMetric.getHostAccesses();
-        Set<String> oldHosts = usageMetric.getHosts();
-        Set<String> currentHosts = new HashSet<>();
-
-        String hostname = null;
-        Integer hostAccessCount = null;
-        for (Map.Entry<String, Integer> hostAccessEntry : hostAccesses.entrySet())
+        else
         {
-            hostname = hostAccessEntry.getKey();
-            hostAccessCount = hostAccessEntry.getValue();
+            Map<String, Integer> hostAccesses = usageMetric.getHostAccesses();
+            Set<String> oldHosts = usageMetric.getHosts();
+            Set<String> currentHosts = new HashSet<>();
 
-            log.debug("hostAccessEntry: " + hostAccessEntry);
-            if (exceedsAccessThreshold(hostAccessCount, usageMetric.getTotalAccessCount()))
+            String hostname;
+            Integer hostAccessCount;
+            for (Map.Entry<String, Integer> hostAccessEntry : hostAccesses.entrySet())
             {
-                currentHosts.add(hostname);
+                hostname = hostAccessEntry.getKey();
+                hostAccessCount = hostAccessEntry.getValue();
+
+                log.debug("hostAccessEntry: " + hostAccessEntry);
+                if (exceedsAccessThreshold(hostAccessCount, usageMetric.getTotalAccessCount()))
+                {
+                    currentHosts.add(hostname);
+                }
             }
-        }
 
-        // Set difference gives use the new hosts to replicate on
-        Set<String> newHosts = new HashSet<>(currentHosts);
-        newHosts.removeAll(oldHosts);
+            // Set difference gives use the new hosts to replicate on
+            Set<String> newHosts = new HashSet<>(currentHosts);
+            newHosts.removeAll(oldHosts);
 
-        // Set difference gives use the hosts to delete from
-        Set<String> deleteHosts = new HashSet<>(oldHosts);
-        deleteHosts.removeAll(currentHosts);
+            // Set difference gives use the hosts to delete from
+            Set<String> deleteHosts = new HashSet<>(oldHosts);
+            deleteHosts.removeAll(currentHosts);
 
-        log.debug("oldHosts: " + oldHosts);
-        log.debug("currentHosts: " + currentHosts);
-        log.debug("newHosts: " + newHosts);
-        log.debug("deleteHosts: " + deleteHosts);
+            log.debug("oldHosts: " + oldHosts);
+            log.debug("currentHosts: " + currentHosts);
+            log.debug("newHosts: " + newHosts);
+            log.debug("deleteHosts: " + deleteHosts);
 
-        String sourceHost = oldHosts.iterator().next();
-        if (newHosts.size() != 0 || deleteHosts.size() != 0)
-        {
-            instruction = new PlacementInstruction(redisKey, sourceHost, newHosts, deleteHosts);
+            String sourceHost = oldHosts.iterator().next();
+            if (newHosts.size() != 0 || deleteHosts.size() != 0)
+            {
+                instruction = new PlacementInstruction(redisKey, sourceHost, newHosts, deleteHosts);
+            }
         }
 
         return instruction;
@@ -130,11 +136,14 @@ public class AnalyzerThread implements Runnable
         List<String> keys = new ArrayList<>(redisHelper.getAllKeys());
         Map<String, UsageMetric> usageMetricMap = new HashMap<>();
 
-        List<String> usageMetrics = redisHelper.multiGet(keys);
-
-        for (int i = 0; i < keys.size(); i++)
+        List<String> usageMetrics = null;
+        if (!keys.isEmpty())
         {
-            usageMetricMap.put(keys.get(i), Constants.MAPPER.readValue(usageMetrics.get(i), UsageMetric.class));
+            usageMetrics = redisHelper.multiGet(keys);
+            for (int i = 0; i < keys.size(); i++)
+            {
+                usageMetricMap.put(keys.get(i), Constants.MAPPER.readValue(usageMetrics.get(i), UsageMetric.class));
+            }
         }
 
         return usageMetricMap;

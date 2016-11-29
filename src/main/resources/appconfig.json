@@ -7,6 +7,7 @@
     "metadataPort": 6380,
     "analysisThreadPoolSize": 1,
     "placementThreadPoolSize": 10,
-    "minutesBetweenAnalysis": 1,
+    "deletionThreadPoolSize": 10,
+    "secondsBetweenAnalysis": 10,
     "keyExpirySeconds": 86400
 }

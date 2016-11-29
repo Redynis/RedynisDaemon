@@ -21,11 +21,14 @@ public class RedynisAnalysisProcessor extends Processor
             Executors.newScheduledThreadPool(Options.getInstance().getAppConfig().getAnalysisThreadPoolSize());
         final ScheduledExecutorService placementScheduler =
             Executors.newScheduledThreadPool(Options.getInstance().getAppConfig().getPlacementThreadPoolSize());
+        final ScheduledExecutorService deletionScheduler =
+            Executors.newScheduledThreadPool(Options.getInstance().getAppConfig().getDeletionThreadPoolSize());
+
 
         log.info("RedynisAnalysis Processing initiated");
         analysisScheduler.scheduleWithFixedDelay(
-            new AnalyzerThread(placementScheduler), 0,
-            Options.getInstance().getAppConfig().getMinutesBetweenAnalysis(), TimeUnit.SECONDS
+            new AnalyzerThread(placementScheduler, deletionScheduler), 0,
+            Options.getInstance().getAppConfig().getSecondsBetweenAnalysis(), TimeUnit.SECONDS
         );
     }
 }

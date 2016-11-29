@@ -1,4 +1,4 @@
-package ca.uwaterloo.redynisdaemon.beans;
+package ca.uwaterloo.redynisdaemon.instructions;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;

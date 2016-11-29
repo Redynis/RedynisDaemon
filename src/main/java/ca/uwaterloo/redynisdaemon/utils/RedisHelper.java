@@ -41,6 +41,11 @@ public class RedisHelper
         jedis.set(key, value);
     }
 
+    public void deleteKey(String key)
+    {
+        jedis.del(key);
+    }
+
     public Set<String> getAllKeys()
     {
         return jedis.keys("*");

@@ -21,6 +21,7 @@ public class AppConfig
     private Integer metadataPort;
     private Integer analysisThreadPoolSize;
     private Integer placementThreadPoolSize;
-    private Integer minutesBetweenAnalysis;
+    private Integer deletionThreadPoolSize;
+    private Integer secondsBetweenAnalysis;
     private Integer keyExpirySeconds;
 }
