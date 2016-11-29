@@ -73,7 +73,7 @@ class PlacementThread implements Runnable
     private void executeCopy(String redisKey, String sourceHost, Set<String> replicateOnHosts)
         throws InternalAppError, IOException
     {
-        Jedis jedis = null;
+        Jedis jedis;
         Integer dataPort = Options.getInstance().getAppConfig().getDataPort();
 
         String redisValue;

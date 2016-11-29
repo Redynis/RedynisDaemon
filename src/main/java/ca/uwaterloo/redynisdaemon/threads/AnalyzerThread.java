@@ -8,6 +8,7 @@ import ca.uwaterloo.redynisdaemon.utils.Options;
 import ca.uwaterloo.redynisdaemon.utils.RedisHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.util.*;
@@ -63,6 +64,16 @@ public class AnalyzerThread implements Runnable
 
         String redisKey = keyMetric.getKey();
         UsageMetric usageMetric = keyMetric.getValue();
+
+        DateTime lastAccessedDate = new DateTime(usageMetric.getLastAccessedDate().getTime());
+        DateTime expiryDeadline =
+            DateTime.now().minusSeconds(Options.getInstance().getAppConfig().getKeyExpirySeconds());
+
+        // if last accessed date is way in the past, delete the key
+        if (lastAccessedDate.isBefore(expiryDeadline))
+        {
+            log.debug("Redis key " + redisKey + " expired. Deleting from all owner hosts");
+        }
 
         Map<String, Integer> hostAccesses = usageMetric.getHostAccesses();
         Set<String> oldHosts = usageMetric.getHosts();

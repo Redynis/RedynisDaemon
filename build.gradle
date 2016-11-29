@@ -17,6 +17,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.3'
     compile 'redis.clients:jedis:2.9.0'
+    compile 'joda-time:joda-time:2.9.6'
     testCompile 'junit:junit:4.12'
 }
 
