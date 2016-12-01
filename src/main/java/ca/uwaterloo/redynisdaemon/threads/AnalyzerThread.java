@@ -76,7 +76,7 @@ public class AnalyzerThread implements Runnable
         if (lastAccessedDate.isBefore(expiryDeadline))
         {
             log.debug("Redis key " + redisKey + " expired. Deleting from all owner hosts");
-            instruction = new PlacementInstruction(redisKey, null, new HashSet<>(), usageMetric.getHosts());
+            instruction = new PlacementInstruction(redisKey, null, new HashSet<String>(), usageMetric.getHosts());
         }
         else
         {
