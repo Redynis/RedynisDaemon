@@ -2,8 +2,8 @@
 Daemon that takes care of the analysis and data placement
 
 ## Requirements
-* Java 1.7 +
-* Gradle 3.0 +
+* Java (1.7+)
+* Gradle (2+)
 
 ## Instructions
 
